@@ -7,6 +7,11 @@ $db = mysql_connect('localhost', 'root', '');
 mysql_select_db('game');
 mysql_query("SET NAMES utf8");
 
+set_time_limit(10000000);
+
+// Ваши куки с схватка.ру
+$Cookie = "";
+
 // Инициализируем переменные.
 $games = null;
 $html  = null;
@@ -68,6 +73,78 @@ unset($html);
 foreach($games as &$game){
 	$html=$scenic=$t=null;
 	
+	// Берём только игры до 19ой!
+	if($game['id'] > 0 ) {
+		
+		
+		if ($curl = curl_init()) {
+			curl_setopt($curl, CURLOPT_ENCODING ,"");
+			curl_setopt($curl, CURLOPT_URL, $game['link']);
+			curl_setopt($curl, CURLOPT_COOKIE, $Cookie);
+			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+			$out = curl_exec($curl);
+			curl_close($curl);
+		}
+		$html = str_get_html( $out);
+		// Проверяем загрузилась ли страница
+		if (is_object($html)) {
+			$t = $html->find('div.postcolor',0);
+			if (is_object($t)) {
+				//  Получаем содержимое строки, и меняем кодировку на utf-8
+				$str = iconv('windows-1251', 'utf-8', $t->innertext)."<b>";
+				// Парсим уровни по патерну
+				if ($game['id'] == 1){
+					preg_match_all( '#Уровень (.*?)\..*?<br />(.*?)<br />Ключ: (.*?)<br /><br />(.*?)<b>#is',$str,$matches, PREG_SET_ORDER);
+					// Перебераем результаты
+					foreach ( $matches as $value ){
+						$level=$tips=null;
+						$level['id'] = $value[1];
+						$level['key'] = $value[2];
+						$level['text'] = $value[3];
+						// Парсим подсказки по патерну
+						preg_match_all( '#Подсказка №.*? \((.?.) мин.\)<br />(.*?)<br /><br />#is', $value[4]."<br><b>", $matches1, PREG_SET_ORDER);
+						
+						// Перебераем результат
+						foreach ( $matches1 as $value1 ){
+							$tip=null;
+							$tip['time'] = $value1[1];
+							$tip['text'] = $value1[2];
+							$tips[] = $tip;
+						}
+						$level['tips'] = $tips;
+						// добавляем уровень в сценарий
+						$scenic[] = $level;
+					}
+					$game['scenic'] = $scenic;
+				} else {
+					preg_match_all( '#Уровень (.*?)\..*?Ключ: (.*?)<br /><br />(.*?)<br /><br />(.*?)<b>#is',$str,$matches, PREG_SET_ORDER);
+					// Перебераем результаты
+					foreach ( $matches as $value ){
+						$level=$tips=null;
+						$level['id'] = $value[1];
+						$level['key'] = $value[2];
+						$level['text'] = $value[3];
+						// Парсим подсказки по патерну
+						preg_match_all( '#Подсказка №.*? \((.?.) мин.\)<br />(.*?)<br /><br />#is', $value[4]."<br><b>", $matches1, PREG_SET_ORDER);
+						
+						// Перебераем результат
+						foreach ( $matches1 as $value1 ){
+							$tip=null;
+							$tip['time'] = $value1[1];
+							$tip['text'] = $value1[2];
+							$tips[] = $tip;
+						}
+						$level['tips'] = $tips;
+						// добавляем уровень в сценарий
+						$scenic[] = $level;
+					}
+					$game['scenic'] = $scenic;
+				}
+			}
+		}
+	}
+	
+	$html=$scenic=$t=null;
 	// Берём только игры после 18ой!
 	if($game['id'] > 18 ) {
 		$html = file_get_html($game['link']);
@@ -96,7 +173,7 @@ foreach($games as &$game){
 					}
 					$level['text'] = $value[3];
 					// Парсим подсказки по патерну
-					preg_match_all( '#Подсказка №.*? \((.?.) мин.\)</b>.*?<br>(.*?)<br><b>#is', $value[4]."<br><b>"/*Костыль*/, $matches1, PREG_SET_ORDER);
+					preg_match_all( '#Подсказка №.*? \((.?.) мин.\)</b>.*?<br>(.*?)<br><b>#is', $value[4]."<br><b>", $matches1, PREG_SET_ORDER);
 					// Перебераем результат
 					foreach ( $matches1 as $value1 ){
 						$tip=null;
@@ -112,61 +189,14 @@ foreach($games as &$game){
 				//print_r($scenic);
 			}
 		}
-	} 
-	//if($game['id'] > 20 ) break; //debug
+	}
+
+	
+	//if($game['id'] == 3 ) break; //debug
 }
 
 // Выводим весь массив
-/* получаем массив вида:
-array (
-	...
-18 => 
-  array (
-    'id' => '19',
-    'title' => 'Свартальвхейм',
-    'link' => 'http://www.shvatka.ru/index.php?act=module&module=shgames&cmd=disp&id=19',
-    'scenic' => 
-    array (
-      0 => 
-      array (
-        'id' => '1',
-        'key' => 'SHШИФРОВКАИЗЦЕНТРА',
-        'bkey' => '',
-        'text' => 'Легенда<br /><br />Вам остается лишь расслабиться и слушать. Кому надо – тот поймет, о чем идет речь. Найти скрытые мысли несложно, если поверить в старую легенду о городе Свартальвхейм. Прошло уже почти тысячелетие, мало кто верит в эту разбитую временем историю, но остались те, чью каменную веру не сломать. Трудолюбивые гномы начали постройку города, не оставляя веры в успех. Удачи им было не занимать, чего и вам желаем в поисках сокровищ маленьких человечков.',
-        'tips' => 
-        array (
-          0 => 
-          array (
-            'time' => '10',
-            'text' => 'не пугайтесь, это шифровка',
-          ),
-          1 => 
-          array (
-            'time' => '20',
-            'text' => 'в расшифровке вам помогут цифры 1 и 6',
-          ),
-          2 => 
-          array (
-            'time' => '35',
-            'text' => 'читаем первое слово, затем шесть слов пропускаем',
-          ),
-          3 => 
-          array (
-            'time' => '50',
-            'text' => 'камнедробильный завод у кристалла',
-          ),
-          4 => 
-          array (
-            'time' => '60',
-            'text' => 'SHШИФРОВКАИЗЦЕНТРА',
-          ),
-        ),
-      ),
-	  ...
-	 )
-	)
-	...
-}
+
 var_export($games); // debug
 //==================================================================================
 ?>
