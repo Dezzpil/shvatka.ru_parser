@@ -1,49 +1,33 @@
 # shvatka.ru_parser
 simplest html parser from shvatka.ru
 
-/* получаем массив вида:
+Use: [PHP Simple HTML DOM Parser] (http://simplehtmldom.sourceforge.net/) and regular expressions
+
+Screept work result simple:
+```php
 array (
 	...
 18 => 
   array (
-    'id' => '19',
-    'title' => 'Свартальвхейм',
-    'link' => 'http://www.shvatka.ru/index.php?act=module&module=shgames&cmd=disp&id=19',
+    'id' => '<GAME ID>',
+    'title' => '<GAME NAME HEADER>',
+    'link' => '<GAME ON SHVATKA.RU URL>',
     'scenic' => 
     array (
       0 => 
       array (
-        'id' => '1',
-        'key' => 'SHШИФРОВКАИЗЦЕНТРА',
-        'bkey' => '',
-        'text' => 'Легенда<br /><br />Вам остается лишь расслабиться и слушать. Кому надо – тот поймет, о чем идет речь. Найти скрытые мысли несложно, если поверить в старую легенду о городе Свартальвхейм. Прошло уже почти тысячелетие, мало кто верит в эту разбитую временем историю, но остались те, чью каменную веру не сломать. Трудолюбивые гномы начали постройку города, не оставляя веры в успех. Удачи им было не занимать, чего и вам желаем в поисках сокровищ маленьких человечков.',
+        'id' => '<LEVEL ID>',
+        'key' => '<LEVEL KEY>',
+        'bkey' => '<LEVEL BRAIN KEY>',
+        'text' => '<LEVEL TEXT>',
         'tips' => 
         array (
           0 => 
           array (
-            'time' => '10',
-            'text' => 'не пугайтесь, это шифровка',
+            'time' => '<TIP HOLD TIME>',
+            'text' => '<TIP TEXT>',
           ),
-          1 => 
-          array (
-            'time' => '20',
-            'text' => 'в расшифровке вам помогут цифры 1 и 6',
-          ),
-          2 => 
-          array (
-            'time' => '35',
-            'text' => 'читаем первое слово, затем шесть слов пропускаем',
-          ),
-          3 => 
-          array (
-            'time' => '50',
-            'text' => 'камнедробильный завод у кристалла',
-          ),
-          4 => 
-          array (
-            'time' => '60',
-            'text' => 'SHШИФРОВКАИЗЦЕНТРА',
-          ),
+          ...
         ),
       ),
 	  ...
@@ -51,3 +35,4 @@ array (
 	)
 	...
 }
+```
